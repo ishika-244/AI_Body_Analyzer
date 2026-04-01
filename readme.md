@@ -1,44 +1,71 @@
 # AI Body Analyzer
 
-An AI-powered web application that predicts body fat percentage using machine learning and provides basic body composition insights.
+Understand your real health beyond just weight.
 
-## Problem
+AI-powered body composition analyzer that predicts body fat % 
+and provides actionable health insights using simple body measurements.
 
-Body composition analysis typically requires specialized machines available in clinics or gyms. This project explores a simpler, data-driven approach using basic body measurements.
+## Live Demo
+
+👉 https://aibodyanalyzer-mbsa55pudnlzwzxzhqekh5.streamlit.app/
+
+## Problem Statement
+
+Most people judge their health using only weight or BMI.
+
+However, these metrics fail to capture actual body composition such as:
+- Body fat %
+- Muscle mass
+- Visceral fat
+
+This leads to misleading conclusions about health.
+
+This project aims to provide a more complete and accessible body analysis 
+without requiring expensive gym or clinical equipment.
 
 ## Features
 
-* Predicts body fat % using a trained ML model
-* Calculates BMI, ideal weight, and body metrics
-* Displays actual vs ideal comparison
-* Provides simple health insights
+- Predicts Body Fat % using Machine Learning
+- Calculates BMI and Ideal Weight
+- Estimates Muscle Mass and Visceral Fat
+- Provides category-based health analysis
+- Clean and interactive UI using Streamlit
+- Instant results with actionable insights
 
-## Approach
+## How It Works
 
-User inputs body measurements → data is scaled → regression model predicts body fat % → system generates insights based on thresholds.
+1. User enters basic body measurements (age, height, weight, etc.)
+2. Data is scaled using StandardScaler
+3. Machine Learning model predicts body fat %
+4. Additional health metrics are calculated
+5. Results are displayed with categories and insights
 
 ## Tech Stack
 
-* Python
-* Scikit-learn
-* Streamlit
-* Pandas, NumPy
+- Python
+- Pandas, NumPy
+- Scikit-learn
+- Streamlit
+- Joblib
 
 ## Dataset
 
-Used a body fat dataset (252 samples) containing features like age, weight, height, and body measurements (abdomen, chest, hip, etc.).
-Selected relevant features and trained model after preprocessing.
+- Body Fat Prediction Dataset (Kaggle)
+- Features used:
+  - Age, Weight, Height
+  - Abdomen, Chest, Hip, Thigh, Neck
 
-## Results
+## Model
 
-Tested Linear Regression and Random Forest.
-Linear Regression performed better due to small dataset size and better generalization.
+- Algorithm: Linear Regression
+- Preprocessing: StandardScaler
+- Output: Body Fat %
+- Performance: Linear Regression performed better than Random Forest in this dataset
 
 ## Future Improvements
 
-* Collect real-world data for better accuracy
-* Add user profile and progress tracking
-* Integrate computer vision for automated measurements
-* Provide personalized recommendations using AI
-
+- Collect real-world user data for better model accuracy
+- Add personalized diet and workout recommendations
+- Integrate computer vision for automatic body measurement detection
+- Add user login and history tracking
  
