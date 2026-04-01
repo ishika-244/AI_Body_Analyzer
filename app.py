@@ -9,7 +9,7 @@ st.markdown(
     <style>
     .stApp {
         background-image: 
-            linear-gradient(rgba(0,0,0,0.92), rgba(0,0,0,0.95)),
+            linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
             url("https://images.unsplash.com/photo-1571019613914-85f342c6a11e");
 
         background-size: cover;
@@ -22,7 +22,7 @@ st.markdown(
 )
 # Title
 st.title("AI Body Analyzer")
-st.caption("AI-powered body composition insights")
+st.caption("Understand your real health beyond just weight.")
 
 with st.expander("How it works"):
     st.write("Body fat predicted using ML model. Other metrics are estimated.")
@@ -34,17 +34,18 @@ colA, colB = st.columns(2)
 
 with colA:
     name = st.text_input("Name")
-    age = st.number_input("Age", step=1)
-    height = st.number_input("Height (cm)")
-    weight = st.number_input("Weight (kg)")
+    age = st.number_input("Age", min_value=15, max_value=80, value=23)
+    height = st.number_input("Height (cm)", min_value=120.0, max_value=220.0, value=155.0)
+    weight = st.number_input("Weight (kg)", min_value=30.0, max_value=150.0, value=44.0)
     gender = st.selectbox("Gender", ["Female", "Male"])
 
 with colB:
-    abdomen = st.number_input("Abdomen (cm)")
-    chest = st.number_input("Chest (cm)")
-    hip = st.number_input("Hip (cm)")
-    thigh = st.number_input("Thigh (cm)")
-    neck = st.number_input("Neck (cm)")
+    abdomen = st.number_input("Abdomen (cm)", min_value=50.0, max_value=150.0)
+    chest = st.number_input("Chest (cm)", min_value=50.0, max_value=150.0)
+    hip = st.number_input("Hip (cm)", min_value=60.0, max_value=160.0)
+    thigh = st.number_input("Thigh (cm)", min_value=30.0, max_value=100.0)
+    neck = st.number_input("Neck (cm)", min_value=25.0, max_value=60.0)
+    
 with st.sidebar:
     st.markdown("## 🧠 AI Body Analyzer")
 
@@ -228,6 +229,11 @@ def body_age_diff(age, b_age):
     
 # User Getting Results with button                
 if st.button("🚀 Analyze Body"):
+    if name.strip() == "":
+                 st.warning("Please enter your name")
+    elif age < 15:
+                 st.warning("This tool is for users above 15")
+    else:       
         bmi = calculate_bmi(weight , height)
         category = bmi_category(bmi)
         diff = bmi_difference(bmi)
@@ -257,7 +263,6 @@ if st.button("🚀 Analyze Body"):
         mus_ideal = muscle_ideal(gender)
         mus_category = muscle_category(gender, muscle_est)
         mus_diff = muscle_diff(muscle_est,mus_ideal)
-
        
          
        # body age 
@@ -266,7 +271,7 @@ if st.button("🚀 Analyze Body"):
         b_diff = body_age_diff(age , b_age)
 
 
-        # More clean UI
+        # UI
         
         st.divider()
         st.subheader(f"📊 Your Health Summary, {name}")
@@ -294,12 +299,22 @@ if st.button("🚀 Analyze Body"):
          st.metric("Body Age", b_age, b_diff)
 
         if body_fat < 21:
-             insight = "⚠️ Low body fat — focus on strength & nutrition"
+             st.info("You are slightly below ideal body fat. Focus on strength training and balanced nutrition.")
         elif body_fat > 33:
-             insight = "⚠️ High body fat — focus on fat loss"
+             st.warning("Your body fat is above ideal range. Consider cardio and calorie management.")
         else:
-                insight = "✅ Healthy body composition"
-        st.success(insight)
+             st.success("Great! You are in a healthy body fat range.")
+
+       
+
+
+st.markdown("### 🧠 Final Verdict")
+
+st.write(f"""
+- Your BMI indicates: **{category}**
+- Body fat is **{fat_category}**
+- Muscle condition: **{mus_category}**
+""")
         # data = {
         #        "Metric" : ["BMI" , "Weight" , "Body Fat%" , "Visceral Fat%" , "Muscle Mass" , "Body Age"],
         #        "Actual" : [f"{bmi:.2f}" , f"{weight:.2f} kg",f"{body_fat:.2f}%",vis_fat , f"{muscle_est:.2f}" , f"{b_age:.2f}"],
@@ -313,4 +328,4 @@ if st.button("🚀 Analyze Body"):
 
         # st.dataframe(df) 
 
-        st.warning("This is an estimate, not medical advice.")
+st.caption("For general health insights only. Not medical advice.")
