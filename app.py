@@ -45,7 +45,7 @@ with colB:
     hip = st.number_input("Hip (cm)", min_value=60.0, max_value=160.0)
     thigh = st.number_input("Thigh (cm)", min_value=30.0, max_value=100.0)
     neck = st.number_input("Neck (cm)", min_value=25.0, max_value=60.0)
-    
+
 with st.sidebar:
     st.markdown("## 🧠 AI Body Analyzer")
 
@@ -308,13 +308,13 @@ if st.button("🚀 Analyze Body"):
        
 
 
-st.markdown("### 🧠 Final Verdict")
+        st.markdown("### 🧠 Final Verdict")
 
-st.write(f"""
-- Your BMI indicates: **{category}**
-- Body fat is **{fat_category}**
-- Muscle condition: **{mus_category}**
-""")
+        st.write(f"""
+                 - Your BMI indicates: **{category}**
+                 - Body fat is **{fat_category}**
+                 - Muscle condition: **{mus_category}**
+                 """)
         # data = {
         #        "Metric" : ["BMI" , "Weight" , "Body Fat%" , "Visceral Fat%" , "Muscle Mass" , "Body Age"],
         #        "Actual" : [f"{bmi:.2f}" , f"{weight:.2f} kg",f"{body_fat:.2f}%",vis_fat , f"{muscle_est:.2f}" , f"{b_age:.2f}"],
