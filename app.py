@@ -242,8 +242,8 @@ if st.button("🚀 Analyze Body"):
         w_diff = weight_diff(weight , ideal_weight)
 
        # ml model used for body fat
-        scaler = joblib.load(r'D:\Projects\Herbalife\AI_Body_Analyzer\models\scaler.pkl')
-        model = joblib.load(r'D:\Projects\Herbalife\AI_Body_Analyzer\models\fat_model.pkl')
+        scaler = joblib.load("models/scaler.pkl")
+        model = joblib.load("models/fat_model.pkl")
 
         input_data= [[age, weight, height ,abdomen, chest, hip, thigh, neck]]
         input_scaled = scaler.transform(input_data)
