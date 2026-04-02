@@ -1,71 +1,98 @@
-# AI Body Analyzer
+# 🧠 FitSense AI
 
-Understand your real health beyond just weight.
+Understand your body beyond just weight.
 
-AI-powered body composition analyzer that predicts body fat % 
-and provides actionable health insights using simple body measurements.
+FitSense AI is a hybrid body composition analysis tool that estimates key health metrics like body fat, visceral fat, muscle mass, and body age using simple body measurements.
 
-## Live Demo
+---
 
+## 🚀 Live Demo
 👉 https://aibodyanalyzer-mbsa55pudnlzwzxzhqekh5.streamlit.app/
 
-## Problem Statement
+---
 
-Most people judge their health using only weight or BMI.
+## 📌 Problem Statement
+
+Most people evaluate their health using only weight or BMI.
 
 However, these metrics fail to capture actual body composition such as:
-- Body fat %
-- Muscle mass
-- Visceral fat
+- Body Fat %
+- Muscle Mass
+- Visceral Fat
 
-This leads to misleading conclusions about health.
+This leads to incomplete or misleading health insights.
 
-This project aims to provide a more complete and accessible body analysis 
-without requiring expensive gym or clinical equipment.
+FitSense AI solves this by providing a more comprehensive, accessible, and explainable body analysis without requiring expensive equipment.
 
-## Features
+---
 
-- Predicts Body Fat % using Machine Learning
-- Calculates BMI and Ideal Weight
-- Estimates Muscle Mass and Visceral Fat
-- Provides category-based health analysis
+## ✨ Features
+
+- Hybrid body composition estimation (formula-based + ML-assisted)
+- Calculates Body Fat %, BMI, Ideal Weight, Muscle Mass, Visceral Fat & Body Age
+- Category-based health interpretation (Low / Ideal / High)
 - Clean and interactive UI using Streamlit
 - Instant results with actionable insights
 
-## How It Works
+---
 
-1. User enters basic body measurements (age, height, weight, etc.)
-2. Data is scaled using StandardScaler
-3. Machine Learning model predicts body fat %
-4. Additional health metrics are calculated
-5. Results are displayed with categories and insights
+## ⚙️ How It Works
 
-## Tech Stack
+1. User inputs body measurements (age, height, weight, circumferences)
+2. Body fat is estimated using validated formulas (US Navy method)
+3. Other metrics (BMI, visceral fat, muscle mass, body age) are computed using analytical models
+4. Machine learning components are integrated where applicable
+5. Results are presented with clear categories and insights
 
-- Python
-- Pandas, NumPy
-- Scikit-learn
-- Streamlit
-- Joblib
+---
 
-## Dataset
+## 🧠 Key Insight
 
-- Body Fat Prediction Dataset (Kaggle)
+Unlike black-box models, FitSense AI focuses on:
+- Explainability  
+- Real-world usability  
+- Interpretable health metrics  
+
+---
+
+## 🛠️ Tech Stack
+
+- Python  
+- Pandas, NumPy  
+- Streamlit  
+- Scikit-learn (for ML components)  
+
+---
+
+## 📊 Dataset
+
+- Body Fat Prediction Dataset (Kaggle)  
 - Features used:
-  - Age, Weight, Height
-  - Abdomen, Chest, Hip, Thigh, Neck
+  - Age, Weight, Height  
+  - Abdomen, Chest, Hip, Thigh, Neck  
 
-## Model
+---
 
-- Algorithm: Linear Regression
-- Preprocessing: StandardScaler
-- Output: Body Fat %
-- Performance: Linear Regression performed better than Random Forest in this dataset
+## 🤖 Model
 
-## Future Improvements
+- Algorithm: Linear Regression  
+- Preprocessing: StandardScaler  
+- Note: ML model is integrated but primary predictions rely on validated domain formulas for better reliability.
 
-- Collect real-world user data for better model accuracy
-- Add personalized diet and workout recommendations
-- Integrate computer vision for automatic body measurement detection
-- Add user login and history tracking
- 
+---
+
+## ⚠️ Disclaimer
+
+This tool provides general fitness insights and is not a substitute for professional medical advice or clinical measurements (e.g., BIA, DEXA scans).
+
+---
+
+## 🔮 Future Improvements
+
+- Personalized fitness and nutrition recommendations  
+- Real-time measurement using computer vision  
+- User history tracking and progress analysis  
+- Improved calibration with real-world data  
+
+---
+

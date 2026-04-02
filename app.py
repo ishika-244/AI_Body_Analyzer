@@ -1,6 +1,7 @@
 import streamlit as st 
 import pandas as pd
 import joblib
+import math
 
 
 # UI Styling
@@ -21,11 +22,16 @@ st.markdown(
     unsafe_allow_html=True
 )
 # Title
-st.title("AI Body Analyzer")
+st.title("Body Composition Analyzer")
 st.caption("Understand your real health beyond just weight.")
 
 with st.expander("How it works"):
-    st.write("Body fat predicted using ML model. Other metrics are estimated.")
+ st.markdown("""
+              - Body fat is estimated using scientifically validated formulas (US Navy method)
+              - Additional health metrics (BMI, visceral fat, muscle mass) are computed using analytical models
+              - Machine Learning models are integrated for enhanced predictions where sufficient data is available
+              - Results are optimized for interpretability and real-world usability
+               """)
 
 # Taking Inputs
 st.subheader("📥 Enter Your Body Measurements")
@@ -47,16 +53,16 @@ with colB:
     neck = st.number_input("Neck (cm)", min_value=25.0, max_value=60.0)
 
 with st.sidebar:
-    st.markdown("## 🧠 AI Body Analyzer")
+    st.markdown("## 🧠 FitSense AI")
 
     st.markdown("---")
 
     st.markdown("### 📌 About")
     st.markdown("""
-- Predicts **Body Fat % using ML**
-- Estimates health metrics  
-- Simple & quick analysis  
-""")
+                 - Hybrid system: formula-based + ML-assisted estimation 
+                 - Covers body fat, BMI, visceral fat & muscle metrics  
+                 - Built for quick, explainable fitness insights
+                """)
 
     st.markdown("### ⚡ Tips")
     st.markdown("""
@@ -66,7 +72,7 @@ with st.sidebar:
 """)
 
     st.markdown("---")
-    st.caption("Built with ML + Streamlit")
+    st.caption("Built with Python, Streamlit & applied health analytics")
 
 # Functions defining 
 
@@ -102,13 +108,14 @@ def bmi_difference(bmi):
     
 # 2- Ideal Weight
 
-def  calculate_ideal_weight(height , gender):
+def calculate_ideal_weight(height , gender):
        height_in_inches = height/2.54
        if gender == "Female":
-             return 45.5 + 2.3 * (height_in_inches - 60)
+             return 49 + 1.7 * (height_in_inches - 60)
+    #    Devini Formula
        else:
-              return 50 + 2.3 * (height_in_inches - 60)
-       
+              return 52 + 1.0 * (height_in_inches - 60)
+
 def weight_diff(weight,ideal_weigth):
        diff = weight - ideal_weigth
 
@@ -118,114 +125,261 @@ def weight_diff(weight,ideal_weigth):
               return f"{abs(diff):.2f} kg below ideal"
        else:
               return f"{diff:.2f} Kg above ideal"  
+       
+
           
 
-# 3 - forumla based -- Ideal Body-Fat%
+# 3 - forumla based -- Ideal Body-Fat% --https://www.calculator.net/body-fat-calculator.html
 
-def calculate_body_fat(gender , bmi , age):
-       if gender == "Female":
-              return 1.20 * bmi + 0.23 * age - 5.4
-       else:
-              return 1.20 * bmi + 0.23 * age - 16.2   
-        
-def ideal_body_fat(gender):
-       if gender == "Female":
-              low, high = 21 , 33
-              return f"{low}--{high}"
-       else:
-              low , high = 10, 20
-              return f"{low}--{high}"
+def calculate_body_fat(gender, height, abdomen, neck, hip=None):
+    
+    try:
+        if gender == "Female":
+            if (abdomen + hip - neck) <= 0:
+                return "Invalid Inputs"
 
-def fat_analysis(body_fat, gender):
+            bf = (
+                495 / (
+                    1.29579
+                    - 0.35004 * math.log10(abdomen + hip - neck)
+                    + 0.22100 * math.log10(height)
+                )
+            ) - 450
+
+        else:  # Male
+            if (abdomen - neck) <= 0:
+                return "Invalid Inputs"
+
+            bf = (
+                495 / (
+                    1.0324
+                    - 0.19077 * math.log10(abdomen - neck)
+                    + 0.15456 * math.log10(height)
+                )
+            ) - 450
+
+        return round(bf, 2)
+
+    except:
+        return "Invalid Body Measurements"
+    
+    
+#Jackson & Pollock Ideal Body Fat Percentages
+def get_ideal_body_fat(age, gender): 
     if gender == "Female":
-        low, high = 21, 33
-    else:
-        low, high = 10, 20
+        if age < 25:
+            return 18
+        elif age < 35:
+            return 20
+        elif age < 45:
+            return 22
+        else:
+            return 24
+    else:  # Male
+        if age < 25:
+            return 10
+        elif age < 35:
+            return 13
+        elif age < 45:
+            return 16
+        else:
+            return 18
+        
 
-    if body_fat < low:
-        return "Low", f"{low - body_fat:.2f}% below ideal"
-    elif body_fat > high:
-        return "High", f"{body_fat - high:.2f}% above ideal"
+#The American Council on Exercise Body Fat Categorization 
+def fat_category(body_fat, gender):
+    if gender == "Female":
+        if body_fat < 14:
+            return "Low"
+        elif body_fat <= 24:
+            return "Fitness"
+        elif body_fat <= 31:
+            return "Average"
+        else:
+            return "High"
+    else:  # Male
+        if body_fat < 6:
+            return "Low"
+        elif body_fat <= 17:
+            return "Fitness"
+        elif body_fat <= 24:
+            return "Average"
+        else:
+            return "High"
+        
+def fat_difference(body_fat, ideal):
+    diff = body_fat - ideal
+
+    if diff < 0:
+        return f"{abs(diff):.2f}% below ideal"
+    elif diff > 0:
+        return f"{diff:.2f}% above ideal"
     else:
-        return "Healthy", "Within ideal range"
+        return "Exactly at ideal"
+    
 
 
 # 4-- visceral fat
- 
-def visceral_fat_level(body_fat):
-    if body_fat < 20:
-        vis = 5
-    elif body_fat < 30:
-        vis = 9
+
+def calculate_visceral_fat(gender, age, weight, height, waist, thigh , bmi):
+    if gender == "Female":
+        vis_fat = (2.15 * waist) - (3.63 * thigh) + (1.46 * age) + (6.22 * bmi) - 92.713
     else:
-        vis = 13
-    return vis
-    
-def vis_fat_analysis(vis):
-    low , high = 1,9
-    if vis < low:
-        return "Low", "Below healthy range"
-    elif vis > high:
-        return "High", f"{vis - high} above ideal"
+        vis_fat = (6 * waist) - (4.41 * thigh) + (1.19 * age) - 213.65
+
+    vis_fat = round(vis_fat / 10)
+    vis_fat = max(1, min(vis_fat, 30))
+    vis_fat = max(1, min(vis_fat, 30))
+    return vis_fat
+
+def ideal_vis_fat():
+     return (1 , 9)
+     
+def visceral_category(vis_fat):
+    if vis_fat <= 9:
+        return "Normal"
+    elif vis_fat <= 14:
+        return "High"
     else:
-        return "Healthy", "Within ideal range"
+        return "Very High"
     
+def visceral_diff(vis_fat):
+    low, high = ideal_vis_fat()
+
+    if vis_fat <= high:
+        return "Within healthy range"
+    elif vis_fat <= 14:
+        return f"{vis_fat - high:.1f} above normal"
+    else:
+        return f"{vis_fat - high:.1f} far above normal"
 
     
 
 # 5-- muscle estimate category
-def muscle_ideal(gender):
-      if gender == "Male":
-            return 45
-      else:
-            return 40
 
-def muscle_category(gender, muscle_est):
-    if gender == "Male" and muscle_est < 45:
-        return "Low"
-    elif gender == "Female" and muscle_est < 40:
-        return "Low"
+def estimate_muscle(weight, body_fat):
+    fat_mass = weight * (body_fat / 100)
+    lbm = weight - fat_mass
+
+    muscle_mass = lbm * 0.5   
+    muscle_percent = (muscle_mass / weight) * 100
+
+    return muscle_percent
+
+def muscle_ideal_range(age, gender):
+    if gender == "Female":
+        if age < 30:
+            return 28.4, 39.8
+        elif age < 40:
+            return 25.0, 36.2
+        elif age < 50:
+            return 24.2, 34.2
+        elif age < 60:
+            return 24.7, 33.5
+        else:
+            return 22.7, 31.9
+
+    else:  # Male
+        if age < 30:
+            return 37.9, 46.7
+        elif age < 40:
+            return 34.1, 44.1
+        elif age < 50:
+            return 33.1, 41.1
+        elif age < 60:
+            return 31.7, 38.5
+        else:
+            return 29.9, 37.7
+        
+
+def muscle_category(muscle, age, gender):
+    low, high = muscle_ideal_range(age, gender)
+
+    if muscle < low:
+        return "Low Muscle Mass"
+    elif muscle > high:
+        return "High Muscle Mass"
     else:
         return "Ideal Muscle Mass"
     
-def muscle_diff(muscle_est, mus_ideal):
-    diff = muscle_est - mus_ideal
+def muscle_diff(muscle, age, gender):
+    low, high = muscle_ideal_range(age, gender)
 
-    if abs(diff) < 1:
-        return "Ideal"
-    elif diff < 0:
-        return f"{abs(diff):.2f}% below ideal"
+    if muscle < low:
+        return f"{low - muscle:.1f}% below ideal"
+    elif muscle > high:
+        return f"{muscle - high:.1f}% above ideal"
     else:
-        return f"{diff:.2f}% above ideal"
+        return "Within ideal range"
       
     
 # 6-- Body age
-def body_age(age, body_fat):
-    if body_fat < 20:
-        return age - 2
-    elif body_fat > 30:
-        return age + 3
-    else:
-        return age
-    
-def body_age_category(age,b_age):
-      if b_age>age:
-            "Body Organs are older than actual age"
-      elif b_age == age:
-            return "Healthy"
-      else:
-            "Body Organs underdeveloped or Weak" 
+def calculate_body_age(age, bmi, body_fat, vis_fat, gender):
+    score = 0
 
-def body_age_diff(age, b_age):
-    diff = b_age - age
+    # BMI
+    if bmi < 18.5:
+        score += 1   # underweight = bad
+    elif bmi > 25:
+        score += 1   # overweight = bad
+    # ideal → 0
+
+    # BODY FAT
+    if gender == "Female":
+        if body_fat < 18:
+            score += 1   # too low = bad
+        elif 21 <= body_fat <= 33:
+            score += 0   # ideal
+        else:
+            score += 1   # too high = bad
+
+    else:
+        if body_fat < 10:
+            score += 1
+        elif 10 <= body_fat <= 25:
+            score += 0
+        else:
+            score += 1
+
+    # VISCERAL FAT (yaha tumhara rule valid hai)
+    if vis_fat <= 5:
+        score -= 1   # good → reduce age
+    elif vis_fat <= 9:
+        score += 0   # normal
+    elif vis_fat <= 14:
+        score += 1
+    else:
+        score += 2
+
+    return age + score
+
+def body_age_category(real_age, body_age):
+    diff = body_age - real_age
+
+    if diff <= -2:
+        return "Younger than your age"
+    elif diff <= 2:
+        return "Normal"
+    else:
+        return "Older than your age"
+    
+def body_age_diff(real_age, body_age):
+    diff = body_age - real_age
 
     if diff == 0:
-        return "Perfect"
-    elif diff > 0:
-        return f"{diff} yrs older"
+        return "Same as your actual age"
+    elif diff < 0:
+        return f"{abs(diff)} years younger"
     else:
-        return f"{abs(diff)} yrs younger"       
-       
+        return f"{diff} years older"       
+
+def body_age_message(real_age, body_age):
+    if body_age < real_age:
+        return "Excellent — your body age is lower than your actual age."
+    elif body_age == real_age:
+        return "Good — your body age matches your actual age."
+    else:
+        return "Needs attention — your body age is higher than your actual age."
     
 # User Getting Results with button                
 if st.button("🚀 Analyze Body"):
@@ -241,34 +395,47 @@ if st.button("🚀 Analyze Body"):
         ideal_weight = calculate_ideal_weight(height , gender)
         w_diff = weight_diff(weight , ideal_weight)
 
-       # ml model used for body fat
-        scaler = joblib.load("models/scaler.pkl")
-        model = joblib.load("models/fat_model.pkl")
+    #    # ml model used for body fat
 
-        input_data= [[age, weight, height ,abdomen, chest, hip, thigh, neck]]
-        input_scaled = scaler.transform(input_data)
+    #     scaler = joblib.load("models/scaler.pkl")
+    #     model = joblib.load("models/fat_model.pkl")
 
-        body_fat = model.predict(input_scaled)[0]
-       #  body_fat = calculate_body_fat(gender , bmi , age) -- formula based 
-        ideal_fat = ideal_body_fat(gender)
-        fat_category, fat_diff = fat_analysis(body_fat, gender)
+    #     input_data= [[age, weight, height ,abdomen, chest, hip, thigh, neck]]
+    #     input_scaled = scaler.transform(input_data)
 
+
+    #     body_fat= calculate_body_fat(gender,height,abdomen,neck,hip)
+
+    #     body_fat = model.predict(input_scaled)[0]
+
+    # Formula Based Body Fat 
+        body_fat = calculate_body_fat(gender , height , abdomen , neck , hip )  
+        if isinstance(body_fat, str):
+             st.error(body_fat)
+             st.stop()
+        ideal_fat = get_ideal_body_fat(age , gender)
+        fat_cat = fat_category(body_fat , gender)
+        fat_diff = fat_difference(body_fat , ideal_fat)
 
        # Visceral fat 
-        vis_fat = visceral_fat_level(body_fat)
-        vis_cat , vis_diff = vis_fat_analysis(vis_fat)
+        vis_fat =calculate_visceral_fat(gender , age , weight  , height , abdomen , thigh , bmi)
+        vis_ideal = ideal_vis_fat()
+        vis_cat = visceral_category(vis_fat)
+        vis_diff = visceral_diff(vis_fat)
 
        #  muscles 
-        muscle_est = 100 - body_fat
-        mus_ideal = muscle_ideal(gender)
-        mus_category = muscle_category(gender, muscle_est)
-        mus_diff = muscle_diff(muscle_est,mus_ideal)
+        muscle_est = estimate_muscle(weight , body_fat)
+        mus_ideal = muscle_ideal_range(age , gender)
+        mus_category = muscle_category(muscle_est, age, gender)
+        mus_diff = muscle_diff(muscle_est, age , gender)
        
          
        # body age 
-        b_age = body_age(age , body_fat)
+        b_age = calculate_body_age(age , bmi , body_fat , vis_fat,gender)
         b_category = body_age_category(age , b_age)
         b_diff = body_age_diff(age , b_age)
+        body_age_msg = body_age_message(age, b_age)
+
 
 
         # UI
@@ -298,12 +465,13 @@ if st.button("🚀 Analyze Body"):
         with col6:
          st.metric("Body Age", b_age, b_diff)
 
-        if body_fat < 21:
-             st.info("You are slightly below ideal body fat. Focus on strength training and balanced nutrition.")
-        elif body_fat > 33:
-             st.warning("Your body fat is above ideal range. Consider cardio and calorie management.")
-        else:
-             st.success("Great! You are in a healthy body fat range.")
+        if fat_cat == "Low":
+          st.warning("⚠️ Low body fat – focus on strength training & nutrition.")
+        elif fat_cat == "High":
+         st.warning("⚠️ High body fat – consider fat loss strategies.")
+        elif fat_cat in ["Fitness", "Average"]:
+         st.success("✅ Healthy body fat range.")
+        
 
        
 
@@ -312,8 +480,9 @@ if st.button("🚀 Analyze Body"):
 
         st.write(f"""
                  - Your BMI indicates: **{category}**
-                 - Body fat is **{fat_category}**
+                 - Body fat is **{fat_cat}**
                  - Muscle condition: **{mus_category}**
+                 - Body age status: **{body_age_msg}**
                  """)
         # data = {
         #        "Metric" : ["BMI" , "Weight" , "Body Fat%" , "Visceral Fat%" , "Muscle Mass" , "Body Age"],
@@ -328,4 +497,4 @@ if st.button("🚀 Analyze Body"):
 
         # st.dataframe(df) 
 
-st.caption("For general health insights only. Not medical advice.")
+st.caption("Estimates are based on formulas and may differ from medical devices (e.g., BIA scans).")
